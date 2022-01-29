@@ -1,4 +1,4 @@
-import { Client, Intents, MessageEmbed } from "discord.js";
+import { Client, Intents, MessageEmbed, TextChannel, User } from "discord.js";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import fetchJavaServer from "./McServerStatus";
@@ -48,6 +48,51 @@ client.on("messageCreate", async (message) => {
     message.channel.send({ embeds: [embed] });
     message.delete();
   }
+  if (command === "setup") {
+    if (!message.member.permissions.has("ADMINISTRATOR")) {
+      message.delete();
+      await message.channel.send(
+        "Sorry, You'll need to be a admin to run this command"
+      );
+      return;
+    }
+    let embed = new MessageEmbed()
+      .setDescription(
+        `Please copy ID for this message and paste it at .env! After that the .env will reload in 30 seconds!`
+      )
+      .setFooter({ text: "Made by DayDevelopment (c) 2022 " });
+    let msg = await message.channel.send({ embeds: [embed] });
+    embed.addField("Channel ID", msg.channelId);
+    embed.addField("Message ID", msg.id);
+    msg.edit({ embeds: [embed] });
+    message.delete();
+    setTimeout(() => {
+      delete process.env.MESSAGE_ID;
+      delete process.env.CHANNEL;
+      dotenv.config({
+        path: path.join(__dirname, "../.env"),
+      });
+    }, 1000 * 30);
+  }
 });
+
+setInterval(async () => {
+  if (process.env.MESSAGE_ID == "CREATE") return;
+  let msgId = process.env.MESSAGE_ID;
+  let msg = await (
+    client.channels.cache.get(process.env.CHANNEL) as TextChannel
+  ).messages.fetch(msgId);
+  let embed = new MessageEmbed()
+    .setTitle("Server status")
+    .setDescription("*This is updated every 40 seconds*")
+    .setFooter({ text: "Made by DayDevelopment (c) 2022" })
+    .setColor("BLURPLE");
+  for (let [key, value] of Object.entries(servers)) {
+    let status = await fetchJavaServer(value);
+    let online = status ? "🟢" : "🔴";
+    embed.addField(key, `Server status: ${online}`);
+  }
+  await msg.edit({ embeds: [embed] });
+}, 1000 * 40);
 
 client.login(process.env.DISCORD_TOKEN);
