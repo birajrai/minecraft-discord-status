@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2020", "ES2021"],
+    "target": "ES2020",
+    "strict": true,
+    "module": "CommonJS",
+    "declaration": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "inlineSourceMap": true,
+    "outDir": "./dist",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowJs": true
+  },
+  "include": ["src"]
+}
